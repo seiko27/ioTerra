@@ -122,13 +122,19 @@
         <div class="md:hidden hidden bg-white w-full py-4 px-4" id="mobileMenu">
             <a href="ioTerra.html" class="block py-2 hover:text-green-500">Accueil</a>
             <a href="#" class="block py-2 text-green-500 font-medium">Services</a>
-            <a href="#waste-management" class="block py-2 hover:text-green-500 pl-4">- Gestion des déchets</a>
-            <a href="#smart-bins" class="block py-2 hover:text-green-500 pl-4">- Poubelles intelligentes</a>
-            <a href="#data-analytics" class="block py-2 hover:text-green-500 pl-4">- Analyse de données</a>
-            <a href="#route-optimization" class="block py-2 hover:text-green-500 pl-4">- Optimisation des itinéraires</a>
             <a href="ioTerra_contact.html" class="block py-2 hover:text-green-500">Contact</a>
         </div>
     </header>
+
+    <script>
+        // Mobile Menu Toggle
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+        
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+    </script>
 
     <!-- Main Content -->
     <main class="pt-20">
