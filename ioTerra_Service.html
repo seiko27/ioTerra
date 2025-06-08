@@ -97,14 +97,11 @@
             
             <!-- Navigation -->
             <nav class="hidden md:flex space-x-8">
-                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="ioTerra.html" class="nav-link">Accueil</a>
                 <div class="dropdown">
-                    <a href="#" class="nav-link active-page">Services</a>
+                    <a href="#" class="nav-link active-page">Service</a>
                     <div class="dropdown-content mt-2 py-2">
-                        <a href="#waste-management" class="block px-4 py-2 hover:bg-gray-100">Gestion des déchets</a>
-                        <a href="#smart-bins" class="block px-4 py-2 hover:bg-gray-100">Poubelles intelligentes</a>
-                        <a href="#data-analytics" class="block px-4 py-2 hover:bg-gray-100">Analyse de données</a>
-                        <a href="#route-optimization" class="block px-4 py-2 hover:bg-gray-100">Optimisation des itinéraires</a>
+                        <a href="#" class="block px-4 py-2 hover:bg-gray-100">Gestion des déchets</a>
                     </div>
                 </div>
                 <a href="ioTerra_contact.html" class="nav-link">Contact</a>
@@ -122,32 +119,45 @@
         <div class="md:hidden hidden bg-white w-full py-4 px-4" id="mobileMenu">
             <a href="ioTerra.html" class="block py-2 hover:text-green-500">Accueil</a>
             <a href="#" class="block py-2 text-green-500 font-medium">Services</a>
+            <a href="#" class="block py-2 hover:text-green-500 pl-4">- Gestion des déchets</a>
             <a href="ioTerra_contact.html" class="block py-2 hover:text-green-500">Contact</a>
         </div>
     </header>
-
-    <script>
-        // Mobile Menu Toggle
-            const menuBtn = document.getElementById('menuBtn');
-            const mobileMenu = document.getElementById('mobileMenu');
-        
-            menuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-    </script>
 
     <!-- Main Content -->
     <main class="pt-20">
         <!-- Hero Section -->
         <section class="gradient-bg text-white py-20">
             <div class="container mx-auto px-4 text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6">Nos Services</h1>
-                <p class="text-lg mb-8 max-w-2xl mx-auto">Découvrez nos solutions innovantes pour une gestion intelligente et durable des déchets.</p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <a href="#waste-management" class="bg-white text-green-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition duration-300">Gestion des déchets</a>
-                    <a href="#smart-bins" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Poubelles intelligentes</a>
-                    <a href="#data-analytics" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Analyse de données</a>
-                    <a href="#route-optimization" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Optimisation des itinéraires</a>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Notre proposition</h1>
+                <p class="text-lg mb-8 max-w-2xl mx-auto">Découvrez notre solution innovante pour une gestion intelligente et durable des déchets.</p>
+                <!-- Boutons déroulants -->
+<div class="text-center">
+  <!-- Bouton principal -->
+  <button onclick="toggleOptions()" class="bg-white text-green-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition duration-300 flex items-center justify-center mx-auto">
+    Gestion des déchets
+    <svg id="toggleIcon" class="w-5 h-5 ml-2 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </button>
+
+  <!-- Autres options cachées -->
+  <div id="otherOptions" class="mt-4 flex flex-wrap justify-center gap-4 hidden">
+    <a href="#smart-bins" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Poubelles intelligentes</a>
+    <a href="#data-analytics" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Réseau de communication</a>
+    <a href="#route-optimization" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Interface utilisateurs</a>
+  </div>
+</div>
+
+<script>
+  function toggleOptions() {
+    const options = document.getElementById('otherOptions');
+    const icon = document.getElementById('toggleIcon');
+    options.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
+  }
+</script>
+
                 </div>
             </div>
         </section>
@@ -155,9 +165,9 @@
         <!-- Services Overview -->
         <section class="py-16 bg-white">
             <div class="container mx-auto px-4">
-                <h2 class="text-3xl font-bold text-center mb-12">Nos solutions complètes</h2>
+                <h2 class="text-3xl font-bold text-center mb-12">Notre solution complète</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <!-- Service Card 1 -->
+                    <!-- Service Card 1 
                     <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
                         <div class="h-48 bg-green-100 relative overflow-hidden">
                             <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -180,7 +190,7 @@
                                 </svg>
                             </a>
                         </div>
-                    </div>
+                    </div>-->
                     
                     <!-- Service Card 2 -->
                     <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
@@ -213,25 +223,42 @@
                     
                     <!-- Service Card 3 -->
                     <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
-                        <div class="h-48 bg-purple-100 relative overflow-hidden">
-                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="200" height="200" fill="#F5F3FF"/>
-                                <path d="M40,140 L70,90 L100,120 L130,70 L160,110" stroke="#8B5CF6" stroke-width="4" fill="none"/>
-                                <circle cx="70" cy="90" r="5" fill="#8B5CF6"/>
-                                <circle cx="100" cy="120" r="5" fill="#8B5CF6"/>
-                                <circle cx="130" cy="70" r="5" fill="#8B5CF6"/>
-                                <circle cx="160" cy="110" r="5" fill="#8B5CF6"/>
-                                <rect x="40" y="140" width="120" height="2" fill="#8B5CF6"/>
-                                <rect x="40" y="60" width="2" height="80" fill="#8B5CF6"/>
-                                <circle cx="50" cy="50" r="10" fill="#8B5CF6" opacity="0.3"/>
-                                <circle cx="150" cy="50" r="10" fill="#8B5CF6" opacity="0.3"/>
-                                <circle cx="50" cy="150" r="10" fill="#8B5CF6" opacity="0.3"/>
-                                <circle cx="150" cy="150" r="10" fill="#8B5CF6" opacity="0.3"/>
-                            </svg>
-                        </div>
+    <div class="h-48 bg-purple-100 relative overflow-hidden">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#F5F3FF"/>
+            
+            <!-- Cloud symbol -->
+            <path d="M130,60 Q140,50 150,55 Q160,45 170,55 Q180,50 180,65 Q190,70 180,80 Q185,90 170,90 Q165,100 150,95 Q140,105 130,95 Q120,100 120,85 Q110,80 120,70 Q115,60 130,60" 
+                  fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <!-- IoT Devices -->
+            <rect x="30" y="120" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <rect x="90" y="140" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <rect x="150" y="130" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <!-- Small screen on devices -->
+            <rect x="33" y="125" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <rect x="93" y="145" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <rect x="153" y="135" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <!-- Connection lines -->
+            <path d="M40,120 L40,100 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <path d="M100,140 L100,110 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <path d="M160,130 L160,110 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <!-- Connection nodes -->
+            <circle cx="40" cy="100" r="3" fill="#8B5CF6"/>
+            <circle cx="100" cy="110" r="3" fill="#8B5CF6"/>
+            <circle cx="160" cy="110" r="3" fill="#8B5CF6"/>
+            <circle cx="150" cy="80" r="4" fill="#8B5CF6"/>
+            <!-- Wireless signals -->
+            <path d="M25,110 Q30,105 35,110" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M22,105 Q30,95 38,105" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M85,130 Q90,125 95,130" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M82,125 Q90,115 98,125" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M145,120 Q150,115 155,120" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M142,115 Q150,105 158,115" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+        </svg>
+    </div>
                         <div class="p-6">
-                            <h3 class="text-xl font-semibold mb-3">Analyse de données</h3>
-                            <p class="text-gray-600 mb-4">Exploitation des données collectées pour générer des insights précieux et améliorer la prise de décision.</p>
+                            <h3 class="text-xl font-semibold mb-3">Réseau de communication</h3>
+                            <p class="text-gray-600 mb-4">Utilisation d'une technologie IoT (Lora) pour assurer la communication entre les conteneurs et les utilsateurs.</p>
                             <a href="#data-analytics" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
                                 En savoir plus
                                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -256,7 +283,7 @@
                             </svg>
                         </div>
                         <div class="p-6">
-                            <h3 class="text-xl font-semibold mb-3">Optimisation des itinéraires</h3>
+                            <h3 class="text-xl font-semibold mb-3">Interface utilisateurs</h3>
                             <p class="text-gray-600 mb-4">Algorithmes avancés pour planifier les itinéraires de collecte les plus efficaces et économiques.</p>
                             <a href="#route-optimization" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
                                 En savoir plus
@@ -276,7 +303,7 @@
                 <div class="flex flex-col md:flex-row items-center mb-16">
                     <div class="md:w-1/2 mb-10 md:mb-0 md:pr-12">
                         <h2 class="text-3xl font-bold mb-6">Gestion intelligente des déchets</h2>
-                        <p class="text-gray-600 mb-6">Notre solution de gestion des déchets combine des capteurs IoT avancés, une analyse de données en temps réel et une interface intuitive pour optimiser la collecte des déchets et réduire les coûts opérationnels.</p>
+                        <p class="text-gray-600 mb-6">Notre solution de gestion des déchets combine des capteurs IoT avancés, un réseau de communication, une analyse de données en temps réel et une interface intuitive pour optimiser la collecte des déchets et réduire les coûts opérationnels.</p>
                         <div class="space-y-4">
                             <div class="flex items-start">
                                 <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
@@ -286,7 +313,7 @@
                                 </div>
                                 <div>
                                     <h3 class="font-semibold mb-1">Surveillance en temps réel</h3>
-                                    <p class="text-gray-600">Suivez le taux de remplissage de vos conteneurs en temps réel grâce à nos capteurs ultrasensibles.</p>
+                                    <p class="text-gray-600">Suivez le taux de remplissage de vos conteneurs en temps réel grâce à nos capteurs de niveau.</p>
                                 </div>
                             </div>
                             <div class="flex items-start">
@@ -296,8 +323,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold mb-1">Analyse prédictive</h3>
-                                    <p class="text-gray-600">Anticipez les besoins de collecte grâce à nos algorithmes d'apprentissage automatique qui prédisent les taux de remplissage.</p>
+                                    <h3 class="font-semibold mb-1">Expérience utilisateur</h3>
+                                    <p class="text-gray-600">Profiter d'une interface web et d'une application pour guider les équipes dans le ramassage des déchets .</p>
                                 </div>
                             </div>
                             <div class="flex items-start">
@@ -308,7 +335,7 @@
                                 </div>
                                 <div>
                                     <h3 class="font-semibold mb-1">Réduction des coûts</h3>
-                                    <p class="text-gray-600">Réduisez jusqu'à 30% vos coûts opérationnels grâce à l'optimisation des ressources et des itinéraires.</p>
+                                    <p class="text-gray-600">Réduisez vos coûts opérationnels grâce à l'optimisation des ressources et des itinéraires.</p>
                                 </div>
                             </div>
                         </div>
