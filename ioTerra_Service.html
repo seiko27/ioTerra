@@ -1,0 +1,830 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ioTerra - Nos Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #34D399 0%, #3B82F6 100%);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #34D399;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .active-page {
+            color: #34D399;
+            font-weight: 600;
+        }
+        .active-page::after {
+            width: 100%;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            z-index: 1;
+            border-radius: 8px;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #34D399 0%, #3B82F6 100%);
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed w-full z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <!-- Logo Placeholder -->
+                <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mr-3">
+                    <span class="text-white font-bold text-xl">iT</span>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">io<span class="text-green-500">Terra</span></span>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="ioTerra.html" class="nav-link">Accueil</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link active-page">Service</a>
+                    <div class="dropdown-content mt-2 py-2">
+                        <a href="#" class="block px-4 py-2 hover:bg-gray-100">Gestion des déchets</a>
+                    </div>
+                </div>
+                <a href="ioTerra_contact.html" class="nav-link">Contact</a>
+            </nav>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden focus:outline-none" id="menuBtn">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-white w-full py-4 px-4" id="mobileMenu">
+            <a href="ioTerra.html" class="block py-2 hover:text-green-500">Accueil</a>
+            <a href="#" class="block py-2 text-green-500 font-medium">Services</a>
+            <a href="#" class="block py-2 hover:text-green-500 pl-4">- Gestion des déchets</a>
+            <a href="ioTerra_contact.html" class="block py-2 hover:text-green-500">Contact</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-20">
+        <!-- Hero Section -->
+        <section class="gradient-bg text-white py-20">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Notre proposition</h1>
+                <p class="text-lg mb-8 max-w-2xl mx-auto">Découvrez notre solution innovante pour une gestion intelligente et durable des déchets.</p>
+                <!-- Boutons déroulants -->
+<div class="text-center">
+  <!-- Bouton principal -->
+  <button onclick="toggleOptions()" class="bg-white text-green-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition duration-300 flex items-center justify-center mx-auto">
+    Gestion des déchets
+    <svg id="toggleIcon" class="w-5 h-5 ml-2 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </button>
+
+  <!-- Autres options cachées -->
+  <div id="otherOptions" class="mt-4 flex flex-wrap justify-center gap-4 hidden">
+    <a href="#smart-bins" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Poubelles intelligentes</a>
+    <a href="#data-analytics" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Réseau de communication</a>
+    <a href="#route-optimization" class="bg-transparent border-2 border-white text-white font-semibold py-2 px-6 rounded-lg hover:bg-white hover:text-green-600 transition duration-300">Interface utilisateurs</a>
+  </div>
+</div>
+
+<script>
+  function toggleOptions() {
+    const options = document.getElementById('otherOptions');
+    const icon = document.getElementById('toggleIcon');
+    options.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
+  }
+</script>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Overview -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12">Notre solution complète</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Service Card 1 
+                    <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                        <div class="h-48 bg-green-100 relative overflow-hidden">
+                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="200" height="200" fill="#ECFDF5"/>
+                                <circle cx="100" cy="100" r="50" fill="#A7F3D0"/>
+                                <path d="M70,100 L90,120 L130,80" stroke="#34D399" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="50" cy="50" r="10" fill="#34D399" opacity="0.3"/>
+                                <circle cx="150" cy="50" r="10" fill="#34D399" opacity="0.3"/>
+                                <circle cx="50" cy="150" r="10" fill="#34D399" opacity="0.3"/>
+                                <circle cx="150" cy="150" r="10" fill="#34D399" opacity="0.3"/>
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-3">Gestion des déchets</h3>
+                            <p class="text-gray-600 mb-4">Solution complète pour optimiser la collecte et le traitement des déchets grâce à l'IoT et l'IA.</p>
+                            <a href="#waste-management" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
+                                En savoir plus
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>-->
+                    
+                    <!-- Service Card 2 -->
+                    <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                        <div class="h-48 bg-blue-100 relative overflow-hidden">
+                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="200" height="200" fill="#EFF6FF"/>
+                                <rect x="60" y="60" width="80" height="100" rx="5" fill="#BFDBFE"/>
+                                <rect x="70" y="50" width="60" height="10" rx="5" fill="#3B82F6"/>
+                                <rect x="75" y="80" width="50" height="10" rx="2" fill="#60A5FA"/>
+                                <rect x="75" y="100" width="50" height="10" rx="2" fill="#60A5FA"/>
+                                <rect x="75" y="120" width="50" height="10" rx="2" fill="#60A5FA"/>
+                                <circle cx="100" cy="150" r="5" fill="#3B82F6"/>
+                                <circle cx="50" cy="50" r="10" fill="#3B82F6" opacity="0.3"/>
+                                <circle cx="150" cy="50" r="10" fill="#3B82F6" opacity="0.3"/>
+                                <circle cx="50" cy="150" r="10" fill="#3B82F6" opacity="0.3"/>
+                                <circle cx="150" cy="150" r="10" fill="#3B82F6" opacity="0.3"/>
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-3">Poubelles intelligentes</h3>
+                            <p class="text-gray-600 mb-4">Conteneurs équipés de capteurs pour surveiller le niveau de remplissage et optimiser la collecte.</p>
+                            <a href="#smart-bins" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
+                                En savoir plus
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Card 3 -->
+                    <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
+    <div class="h-48 bg-purple-100 relative overflow-hidden">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="#F5F3FF"/>
+            
+            <!-- Cloud symbol -->
+            <path d="M130,60 Q140,50 150,55 Q160,45 170,55 Q180,50 180,65 Q190,70 180,80 Q185,90 170,90 Q165,100 150,95 Q140,105 130,95 Q120,100 120,85 Q110,80 120,70 Q115,60 130,60" 
+                  fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <!-- IoT Devices -->
+            <rect x="30" y="120" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <rect x="90" y="140" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <rect x="150" y="130" width="20" height="30" rx="2" fill="#DDD6FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <!-- Small screen on devices -->
+            <rect x="33" y="125" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <rect x="93" y="145" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <rect x="153" y="135" width="14" height="8" rx="1" fill="#8B5CF6" opacity="0.6"/>
+            <!-- Connection lines -->
+            <path d="M40,120 L40,100 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <path d="M100,140 L100,110 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <path d="M160,130 L160,110 L150,80" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+            <!-- Connection nodes -->
+            <circle cx="40" cy="100" r="3" fill="#8B5CF6"/>
+            <circle cx="100" cy="110" r="3" fill="#8B5CF6"/>
+            <circle cx="160" cy="110" r="3" fill="#8B5CF6"/>
+            <circle cx="150" cy="80" r="4" fill="#8B5CF6"/>
+            <!-- Wireless signals -->
+            <path d="M25,110 Q30,105 35,110" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M22,105 Q30,95 38,105" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M85,130 Q90,125 95,130" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M82,125 Q90,115 98,125" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M145,120 Q150,115 155,120" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+            <path d="M142,115 Q150,105 158,115" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+        </svg>
+    </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-3">Réseau de communication</h3>
+                            <p class="text-gray-600 mb-4">Utilisation d'une technologie IoT (Lora) pour assurer la communication entre les conteneurs et les utilsateurs.</p>
+                            <a href="#data-analytics" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
+                                En savoir plus
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Card 4 -->
+                    <div class="service-card bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                        <div class="h-48 bg-yellow-100 relative overflow-hidden">
+                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="200" height="200" fill="#FEF3C7"/>
+                                <circle cx="50" cy="50" r="10" fill="#FBBF24"/>
+                                <circle cx="150" cy="50" r="10" fill="#FBBF24"/>
+                                <circle cx="50" cy="150" r="10" fill="#FBBF24"/>
+                                <circle cx="150" cy="150" r="10" fill="#FBBF24"/>
+                                <path d="M50,50 Q100,20 150,50 Q180,100 150,150 Q100,180 50,150 Q20,100 50,50" stroke="#F59E0B" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+                                <circle cx="100" cy="100" r="30" fill="#FCD34D" opacity="0.5"/>
+                                <path d="M85,100 L95,110 L115,90" stroke="#F59E0B" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-3">Interface utilisateurs</h3>
+                            <p class="text-gray-600 mb-4">Algorithmes avancés pour planifier les itinéraires de collecte les plus efficaces et économiques.</p>
+                            <a href="#route-optimization" class="text-green-600 font-medium hover:text-green-700 transition duration-300 flex items-center">
+                                En savoir plus
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Waste Management Section -->
+        <section id="waste-management" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center mb-16">
+                    <div class="md:w-1/2 mb-10 md:mb-0 md:pr-12">
+                        <h2 class="text-3xl font-bold mb-6">Gestion intelligente des déchets</h2>
+                        <p class="text-gray-600 mb-6">Notre solution de gestion des déchets combine des capteurs IoT avancés, un réseau de communication, une analyse de données en temps réel et une interface intuitive pour optimiser la collecte des déchets et réduire les coûts opérationnels.</p>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold mb-1">Surveillance en temps réel</h3>
+                                    <p class="text-gray-600">Suivez le taux de remplissage de vos conteneurs en temps réel grâce à nos capteurs de niveau.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold mb-1">Expérience utilisateur</h3>
+                                    <p class="text-gray-600">Profiter d'une interface web et d'une application pour guider les équipes dans le ramassage des déchets .</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold mb-1">Réduction des coûts</h3>
+                                    <p class="text-gray-600">Réduisez vos coûts opérationnels grâce à l'optimisation des ressources et des itinéraires.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="relative">
+                            <div class="w-full h-80 bg-green-50 rounded-lg overflow-hidden">
+                                <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="400" height="300" fill="#ECFDF5"/>
+                                    <circle cx="200" cy="150" r="80" fill="#A7F3D0"/>
+                                    <rect x="160" y="100" width="80" height="100" rx="5" fill="#34D399"/>
+                                    <rect x="170" y="90" width="60" height="10" rx="5" fill="#059669"/>
+                                    <rect x="180" y="120" width="40" height="60" rx="2" fill="#ECFDF5"/>
+                                    <path d="M190,140 L210,140" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M190,150 L210,150" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M190,160 L210,160" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+                                    <circle cx="120" cy="100" r="20" fill="#34D399" opacity="0.5"/>
+                                    <circle cx="280" cy="100" r="20" fill="#34D399" opacity="0.5"/>
+                                    <circle cx="120" cy="200" r="20" fill="#34D399" opacity="0.5"/>
+                                    <circle cx="280" cy="200" r="20" fill="#34D399" opacity="0.5"/>
+                                    <path d="M120,100 Q200,50 280,100" stroke="#059669" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <path d="M120,200 Q200,250 280,200" stroke="#059669" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <path d="M100,150 L140,150" stroke="#059669" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <path d="M260,150 L300,150" stroke="#059669" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <circle cx="200" cy="150" r="5" fill="#059669"/>
+                                </svg>
+                            </div>
+                            <div class="absolute -bottom-6 -right-6 w-32 h-32 rounded-lg gradient-bg"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-6">Comment fonctionne notre solution</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-xl">1</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Installation des capteurs</h4>
+                            <p class="text-gray-600">Nos capteurs IoT sont installés dans vos conteneurs pour mesurer le niveau de remplissage.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-xl">2</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Collecte des données</h4>
+                            <p class="text-gray-600">Les données sont transmises en temps réel à notre plateforme cloud sécurisée.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-xl">3</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Analyse et optimisation</h4>
+                            <p class="text-gray-600">Notre algorithme analyse les données et génère des itinéraires optimisés.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <span class="text-white font-bold text-xl">4</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Suivi et amélioration</h4>
+                            <p class="text-gray-600">Accédez à des tableaux de bord intuitifs pour suivre les performances.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Smart Bins Section -->
+        <section id="smart-bins" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12">Poubelles intelligentes</h2>
+                
+                <div class="flex flex-col lg:flex-row items-center mb-16">
+                    <div class="lg:w-1/2 mb-10 lg:mb-0">
+                        <div class="relative">
+                            <div class="w-full h-96 bg-blue-50 rounded-lg overflow-hidden">
+                                <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="400" height="300" fill="#EFF6FF"/>
+                                    <rect x="120" y="80" width="160" height="200" rx="10" fill="#BFDBFE"/>
+                                    <rect x="140" y="60" width="120" height="20" rx="10" fill="#3B82F6"/>
+                                    <rect x="140" y="100" width="120" height="160" rx="5" fill="#93C5FD"/>
+                                    <rect x="160" y="120" width="80" height="120" rx="5" fill="#60A5FA"/>
+                                    <circle cx="200" cy="180" r="30" fill="#2563EB"/>
+                                    <circle cx="200" cy="180" r="20" fill="#DBEAFE"/>
+                                    <path d="M190,180 L210,180" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M200,170 L200,190" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+                                    <circle cx="160" cy="140" r="5" fill="#2563EB"/>
+                                    <circle cx="240" cy="140" r="5" fill="#2563EB"/>
+                                    <circle cx="160" cy="220" r="5" fill="#2563EB"/>
+                                    <circle cx="240" cy="220" r="5" fill="#2563EB"/>
+                                    <path d="M80,150 L120,150" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <path d="M280,150 L320,150" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                    <circle cx="80" cy="150" r="10" fill="#3B82F6" opacity="0.5"/>
+                                    <circle cx="320" cy="150" r="10" fill="#3B82F6" opacity="0.5"/>
+                                    <path d="M80,150 Q200,50 320,150" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2 lg:pl-12">
+                        <h3 class="text-2xl font-semibold mb-6">Des conteneurs connectés pour une ville plus propre</h3>
+                        <p class="text-gray-600 mb-6">Nos poubelles intelligentes sont équipées de capteurs de pointe qui mesurent en temps réel le niveau de remplissage, la température et d'autres paramètres importants. Ces données sont transmises à notre plateforme cloud pour une gestion optimale des collectes.</p>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Capteurs ultrasoniques
+                                </h4>
+                                <p class="text-gray-600">Mesure précise du niveau de remplissage avec une précision de ±2%.</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Connectivité avancée
+                                </h4>
+                                <p class="text-gray-600">Transmission des données via LoRaWAN, NB-IoT ou LTE-M pour une couverture optimale.</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Autonomie énergétique
+                                </h4>
+                                <p class="text-gray-600">Batterie longue durée (jusqu'à 5 ans) ou option d'alimentation solaire pour une solution écologique.</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Installation facile
+                                </h4>
+                                <p class="text-gray-600">Montage simple et rapide sur tous types de conteneurs existants sans modification majeure.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Smart Bins Types -->
+                <div class="mt-16">
+                    <h3 class="text-2xl font-semibold text-center mb-8">Types de poubelles intelligentes</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                            <div class="h-48 bg-green-100 relative">
+                                <svg class="w-full h-full" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="150" fill="#ECFDF5"/>
+                                    <rect x="60" y="30" width="80" height="100" rx="5" fill="#34D399"/>
+                                    <rect x="70" y="20" width="60" height="10" rx="5" fill="#059669"/>
+                                    <rect x="70" y="40" width="60" height="80" rx="2" fill="#A7F3D0"/>
+                                    <path d="M80,60 L120,60" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,80 L120,80" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,100 L120,100" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+                                    <text x="100" y="140" text-anchor="middle" fill="#059669" font-size="12" font-weight="bold">Déchets recyclables</text>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold mb-2">Conteneurs pour recyclables</h4>
+                                <p class="text-gray-600">Optimisés pour la collecte sélective avec capteurs de qualité pour éviter la contamination.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                            <div class="h-48 bg-gray-200 relative">
+                                <svg class="w-full h-full" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="150" fill="#F9FAFB"/>
+                                    <rect x="60" y="30" width="80" height="100" rx="5" fill="#6B7280"/>
+                                    <rect x="70" y="20" width="60" height="10" rx="5" fill="#374151"/>
+                                    <rect x="70" y="40" width="60" height="80" rx="2" fill="#E5E7EB"/>
+                                    <path d="M80,60 L120,60" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,80 L120,80" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,100 L120,100" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
+                                    <text x="100" y="140" text-anchor="middle" fill="#374151" font-size="12" font-weight="bold">Déchets ménagers</text>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold mb-2">Conteneurs pour déchets ménagers</h4>
+                                <p class="text-gray-600">Équipés de capteurs de poids et de niveau pour une collecte optimisée.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                            <div class="h-48 bg-yellow-100 relative">
+                                <svg class="w-full h-full" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="150" fill="#FEF3C7"/>
+                                    <rect x="60" y="30" width="80" height="100" rx="5" fill="#F59E0B"/>
+                                    <rect x="70" y="20" width="60" height="10" rx="5" fill="#D97706"/>
+                                    <rect x="70" y="40" width="60" height="80" rx="2" fill="#FCD34D"/>
+                                    <path d="M80,60 L120,60" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,80 L120,80" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M80,100 L120,100" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+                                    <text x="100" y="140" text-anchor="middle" fill="#D97706" font-size="12" font-weight="bold">Déchets organiques</text>
+                                </svg>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold mb-2">Conteneurs pour déchets organiques</h4>
+                                <p class="text-gray-600">Avec capteurs de température et d'humidité pour prévenir les odeurs et optimiser la collecte.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Analytics Section -->
+        <section id="data-analytics" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12">Analyse de données</h2>
+                
+                <div class="flex flex-col lg:flex-row items-center mb-16">
+                    <div class="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
+                        <h3 class="text-2xl font-semibold mb-6">Transformez vos données en insights stratégiques</h3>
+                        <p class="text-gray-600 mb-6">Notre plateforme d'analyse de données exploite les informations collectées par nos capteurs pour vous fournir des insights précieux sur vos opérations de gestion des déchets. Grâce à des algorithmes d'intelligence artificielle et d'apprentissage automatique, nous transformons les données brutes en informations exploitables.</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Tableaux de bord personnalisés</h4>
+                                    <p class="text-gray-600">Visualisez vos données clés en un coup d'œil grâce à des tableaux de bord intuitifs et personnalisables.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Prévisions précises</h4>
+                                    <p class="text-gray-600">Anticipez les besoins de collecte grâce à nos modèles prédictifs qui tiennent compte des tendances historiques et des facteurs saisonniers.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Alertes en temps réel</h4>
+                                    <p class="text-gray-600">Recevez des notifications instantanées lorsque des conteneurs atteignent des seuils critiques ou en cas d'anomalies détectées.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Rapports détaillés</h4>
+                                    <p class="text-gray-600">Générez des rapports personnalisés sur les performances, les économies réalisées et l'impact environnemental.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="h-80 bg-purple-50 rounded-lg overflow-hidden">
+                                <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="400" height="300" fill="#F5F3FF"/>
+                                    <rect x="50" y="50" width="300" height="200" rx="5" fill="#EDE9FE"/>
+                                    <rect x="70" y="70" width="260" height="160" rx="5" fill="#DDD6FE"/>
+                                    <path d="M70,180 L330,180" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M70,140 L330,140" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M70,100 L330,100" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M100,70 L100,230" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M150,70 L150,230" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M200,70 L200,230" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M250,70 L250,230" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M300,70 L300,230" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="5,5"/>
+                                    <path d="M100,180 L150,160 L200,170 L250,130 L300,90" stroke="#8B5CF6" stroke-width="3" fill="none"/>
+                                    <circle cx="100" cy="180" r="5" fill="#8B5CF6"/>
+                                    <circle cx="150" cy="160" r="5" fill="#8B5CF6"/>
+                                    <circle cx="200" cy="170" r="5" fill="#8B5CF6"/>
+                                    <circle cx="250" cy="130" r="5" fill="#8B5CF6"/>
+                                    <circle cx="300" cy="90" r="5" fill="#8B5CF6"/>
+                                    <path d="M100,150 L150,170 L200,140 L250,160 L300,120" stroke="#A78BFA" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+                                    <circle cx="100" cy="150" r="4" fill="#A78BFA"/>
+                                    <circle cx="150" cy="170" r="4" fill="#A78BFA"/>
+                                    <circle cx="200" cy="140" r="4" fill="#A78BFA"/>
+                                    <circle cx="250" cy="160" r="4" fill="#A78BFA"/>
+                                    <circle cx="300" cy="120" r="4" fill="#A78BFA"/>
+                                    <rect x="70" y="230" width="260" height="20" rx="5" fill="#C4B5FD"/>
+                                    <text x="100" y="245" font-size="10" fill="#4C1D95">Jan</text>
+                                    <text x="150" y="245" font-size="10" fill="#4C1D95">Fév</text>
+                                    <text x="200" y="245" font-size="10" fill="#4C1D95">Mar</text>
+                                    <text x="250" y="245" font-size="10" fill="#4C1D95">Avr</text>
+                                    <text x="300" y="245" font-size="10" fill="#4C1D95">Mai</text>
+                                </svg>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold">Taux de remplissage moyen</h4>
+                                    <span class="text-purple-600 font-semibold">+12% ce mois</span>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-purple-600 rounded-full mr-2"></div>
+                                        <span class="text-sm text-gray-600">Actuel</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-purple-400 rounded-full mr-2"></div>
+                                        <span class="text-sm text-gray-600">Prévision</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Features -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-3">Analyse des tendances</h4>
+                        <p class="text-gray-600">Identifiez les modèles de remplissage saisonniers et les tendances à long terme pour une planification stratégique.</p>
+                    </div>
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-3">Cartographie intelligente</h4>
+                        <p class="text-gray-600">Visualisez vos conteneurs sur une carte interactive avec des indicateurs de niveau en temps réel et des alertes géolocalisées.</p>
+                    </div>
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-3">Analyse des coûts</h4>
+                        <p class="text-gray-600">Suivez vos économies réalisées et identifiez de nouvelles opportunités d'optimisation des coûts opérationnels.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Route Optimization Section -->
+        <section id="route-optimization" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12">Optimisation des itinéraires</h2>
+                
+                <div class="flex flex-col lg:flex-row items-center mb-16">
+                    <div class="lg:w-1/2 mb-10 lg:mb-0">
+                        <div class="relative">
+                            <div class="w-full h-96 bg-yellow-50 rounded-lg overflow-hidden">
+                                <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="400" height="300" fill="#FEF3C7"/>
+                                    <rect x="50" y="50" width="300" height="200" rx="5" fill="#FBBF24" opacity="0.1"/>
+                                    <circle cx="100" cy="100" r="10" fill="#F59E0B"/>
+                                    <circle cx="150" cy="80" r="10" fill="#F59E0B"/>
+                                    <circle cx="200" cy="120" r="10" fill="#F59E0B"/>
+                                    <circle cx="250" cy="90" r="10" fill="#F59E0B"/>
+                                    <circle cx="300" cy="150" r="10" fill="#F59E0B"/>
+                                    <circle cx="120" cy="180" r="10" fill="#F59E0B"/>
+                                    <circle cx="220" cy="200" r="10" fill="#F59E0B"/>
+                                    <path d="M100,100 L150,80 L200,120 L250,90 L300,150 L220,200 L120,180 Z" stroke="#D97706" stroke-width="2" fill="none"/>
+                                    <circle cx="100" cy="100" r="5" fill="#FBBF24"/>
+                                    <circle cx="150" cy="80" r="5" fill="#FBBF24"/>
+                                    <circle cx="200" cy="120" r="5" fill="#FBBF24"/>
+                                    <circle cx="250" cy="90" r="5" fill="#FBBF24"/>
+                                    <circle cx="300" cy="150" r="5" fill="#FBBF24"/>
+                                    <circle cx="120" cy="180" r="5" fill="#FBBF24"/>
+                                    <circle cx="220" cy="200" r="5" fill="#FBBF24"/>
+                                    <path d="M100,100 Q125,90 150,80" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M150,80 Q175,100 200,120" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M200,120 Q225,105 250,90" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M250,90 Q275,120 300,150" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M300,150 Q260,175 220,200" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M220,200 Q170,190 120,180" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <path d="M120,180 Q110,140 100,100" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                                    <rect x="90" y="70" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="140" y="50" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="190" y="90" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="240" y="60" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="290" y="120" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="110" y="150" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                    <rect x="210" y="170" width="20" height="20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2 lg:pl-12">
+                        <h3 class="text-2xl font-semibold mb-6">Des itinéraires intelligents pour une efficacité maximale</h3>
+                        <p class="text-gray-600 mb-6">Notre solution d'optimisation des itinéraires utilise des algorithmes avancés pour planifier les parcours de collecte les plus efficaces en fonction des niveaux de remplissage des conteneurs, des contraintes de trafic et d'autres paramètres importants.</p>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Planification dynamique
+                                </h4>
+                                <p class="text-gray-600">Ajustement en temps réel des itinéraires en fonction des niveaux de remplissage et des conditions de circulation.</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Paramètres personnalisables
+                                </h4>
+                                <p class="text-gray-600">Définissez vos propres contraintes et priorités pour adapter les itinéraires à vos besoins spécifiques.</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Optimisation multi-objectifs
+                                </h4>
+                                <p class="text-gray-600">Équilibrez plusieurs objectifs comme la réduction des distances parcourues, l'optimisation du temps et la minimisation de l'empreinte carbone.</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2 flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Navigation pour chauffeurs
+                                </h4>
+                                <p class="text-gray-600">Application mobile intuitive pour les chauffeurs avec navigation GPS et mise à jour en temps réel des itinéraires.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefits -->
+                <div class="mt-16">
+                    <h3 class="text-2xl font-semibold text-center mb-8">Avantages de l'optimisation des itinéraires</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-semibold mb-2">Réduction des coûts</h4>
+                            <p class="text-gray-600">Économisez jusqu'à 30% sur les coûts de carburant et de maintenance.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-semibold mb-2">Empreinte carbone</h4>
+                            <p class="text-gray-600">Réduisez les émissions de CO2 grâce à des parcours plus courts et plus efficaces.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-semibold mb-2">Gain de temps</h4>
+                            <p class="text-gray-600">Optimisez le temps de travail des équipes de collecte et améliorez leur productivité.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-semibold mb-2">Satisfaction client</h4>
+                            <p class="text-gray-600">Améliorez la propreté urbaine et la satisfaction des citoyens grâce à des collectes plus efficaces.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs Section -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h2 class="<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94917c574266e21e',t:'MTc0ODgxMDAwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
