@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartWaste - Gestion Intelligente des Déchets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .map-container { height: calc(100vh - 80px); }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+            padding: 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success { background-color: #10B981; }
+        .notification.error { background-color: #EF4444; }
+        .notification.warning { background-color: #F59E0B; }
+        .notification.info { background-color: #3B82F6; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-recycle text-2xl"></i>
+                <h1 class="text-2xl font-bold">SmartWaste</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <button onclick="showSection('dashboard')" class="nav-btn hover:text-blue-200 transition-colors">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Tableau de bord
+                </button>
+                <button onclick="showSection('map')" class="nav-btn hover:text-blue-200 transition-colors">
+                    <i class="fas fa-map mr-2"></i>Cartographie
+                </button>
+                <button onclick="showSection('routes')" class="nav-btn hover:text-blue-200 transition-colors">
+                    <i class="fas fa-route mr-2"></i>Itinéraires
+                </button>
+                <button onclick="showSection('stats')" class="nav-btn hover:text-blue-200 transition-colors">
+                    <i class="fas fa-chart-bar mr-2"></i>Statistiques
+                </button>
+                <button onclick="showSection('admin')" class="nav-btn hover:text-blue-200 transition-colors">
+                    <i class="fas fa-cog mr-2"></i>Administration
+                </button>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <i class="fas fa-bell text-xl cursor-pointer hover:text-blue-200" onclick="toggleNotifications()"></i>
+                    <span id="notificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23e5e7eb'/%3E%3Ctext x='16' y='20' text-anchor='middle' fill='%23374151' font-family='Arial' font-size='12'%3EJD%3C/text%3E%3C/svg%3E" alt="Avatar" class="w-8 h-8 rounded-full">
+                    <span class="hidden md:block">Jean Dupont</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden bg-white border-b">
+        <div class="flex overflow-x-auto px-4 py-2 space-x-4">
+            <button onclick="showSection('dashboard')" class="mobile-nav-btn whitespace-nowrap px-3 py-2 text-sm">
+                <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+            </button>
+            <button onclick="showSection('map')" class="mobile-nav-btn whitespace-nowrap px-3 py-2 text-sm">
+                <i class="fas fa-map mr-1"></i>Carte
+            </button>
+            <button onclick="showSection('routes')" class="mobile-nav-btn whitespace-nowrap px-3 py-2 text-sm">
+                <i class="fas fa-route mr-1"></i>Routes
+            </button>
+            <button onclick="showSection('stats')" class="mobile-nav-btn whitespace-nowrap px-3 py-2 text-sm">
+                <i class="fas fa-chart-bar mr-1"></i>Stats
+            </button>
+            <button onclick="showSection('admin')" class="mobile-nav-btn whitespace-nowrap px-3 py-2 text-sm">
+                <i class="fas fa-cog mr-1"></i>Admin
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationPanel" class="hidden fixed top-16 right-4 bg-white rounded-lg shadow-xl z-50 w-80 max-h-96 overflow-y-auto">
+        <div class="p-4 border-b">
+            <h3 class="font-semibold text-gray-800">Notifications</h3>
+        </div>
+        <div id="notificationsList" class="p-4 space-y-3">
+            <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                <div>
+                    <p class="text-sm font-medium text-red-800">Poubelle critique</p>
+                    <p class="text-xs text-red-600">Poubelle #PB-001 à 95% - Collecte urgente</p>
+                    <p class="text-xs text-gray-500">Il y a 5 min</p>
+                </div>
+            </div>
+            <div class="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
+                <i class="fas fa-info-circle text-orange-500 mt-1"></i>
+                <div>
+                    <p class="text-sm font-medium text-orange-800">Capteur défaillant</p>
+                    <p class="text-xs text-orange-600">Poubelle #PB-015 - Pas de signal depuis 2h</p>
+                    <p class="text-xs text-gray-500">Il y a 15 min</p>
+                </div>
+            </div>
+            <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                <div>
+                    <p class="text-sm font-medium text-blue-800">Tournée terminée</p>
+                    <p class="text-xs text-blue-600">Secteur Nord - 12 poubelles collectées</p>
+                    <p class="text-xs text-gray-500">Il y a 30 min</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Tableau de bord</h2>
+                <p class="text-gray-600">Vue d'ensemble de votre système de gestion des déchets</p>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Poubelles actives</p>
+                            <p id="activeBins" class="text-3xl font-bold text-gray-900">247</p>
+                            <p class="text-sm text-green-600 mt-1">
+                                <i class="fas fa-arrow-up mr-1"></i>+5 cette semaine
+                            </p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-trash text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Taux moyen</p>
+                            <p id="averageLevel" class="text-3xl font-bold text-gray-900">68%</p>
+                            <p class="text-sm text-orange-600 mt-1">
+                                <i class="fas fa-arrow-up mr-1"></i>+12% vs hier
+                            </p>
+                        </div>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i class="fas fa-chart-pie text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Collectes aujourd'hui</p>
+                            <p id="todayCollections" class="text-3xl font-bold text-gray-900">23</p>
+                            <p class="text-sm text-green-600 mt-1">
+                                <i class="fas fa-check mr-1"></i><span id="completedCollections">18</span> terminées
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-truck text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Alertes actives</p>
+                            <p id="activeAlerts" class="text-3xl font-bold text-red-600">3</p>
+                            <p class="text-sm text-red-600 mt-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Action requise
+                            </p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-bell text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Évolution du remplissage</h3>
+                    <canvas id="fillChart" width="400" height="200"></canvas>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition par zone</h3>
+                    <canvas id="zoneChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activité récente</h3>
+                <div id="recentActivity" class="space-y-4">
+                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-green-100 p-2 rounded-full">
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Collecte terminée - Secteur Centre</p>
+                            <p class="text-sm text-gray-600">15 poubelles vidées • Il y a 25 minutes</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-red-100 p-2 rounded-full">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Alerte remplissage - Poubelle PB-001</p>
+                            <p class="text-sm text-gray-600">Niveau critique 95% • Il y a 1 heure</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <i class="fas fa-plus text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">Nouveau capteur ajouté - Zone Industrielle</p>
+                            <p class="text-sm text-gray-600">Poubelle PB-248 • Il y a 2 heures</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div id="map" class="section hidden">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Cartographie des poubelles</h2>
+                <p class="text-gray-600">Visualisation en temps réel du niveau de remplissage</p>
+            </div>
+
+            <!-- Map Controls -->
+            <div class="bg-white rounded-xl p-4 mb-6 card-shadow">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Filtrer par zone:</label>
+                        <select id="zoneFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="">Toutes les zones</option>
+                            <option value="centre">Centre-ville</option>
+                            <option value="nord">Secteur Nord</option>
+                            <option value="sud">Secteur Sud</option>
+                            <option value="industriel">Zone Industrielle</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Niveau:</label>
+                        <select id="levelFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="">Tous niveaux</option>
+                            <option value="low">< 50% (Vert)</option>
+                            <option value="medium">50-70% (Orange)</option>
+                            <option value="high">> 70% (Rouge)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Type:</label>
+                        <select id="typeFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="">Tous types</option>
+                            <option value="general">Déchets généraux</option>
+                            <option value="recyclable">Recyclables</option>
+                            <option value="organic">Organiques</option>
+                        </select>
+                    </div>
+                    <button onclick="applyFilters()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Appliquer
+                    </button>
+                    <button onclick="refreshMap()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-sync mr-2"></i>Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="bg-white rounded-xl p-4 mb-6 card-shadow">
+                <h4 class="font-semibold text-gray-800 mb-3">Légende</h4>
+                <div class="flex flex-wrap gap-6">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-700">< 50% (Bon)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                        <span class="text-sm text-gray-700">50-70% (Attention)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-red-500 rounded-full pulse"></div>
+                        <span class="text-sm text-gray-700">> 70% (Critique)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                        <span class="text-sm text-gray-700">Hors ligne</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div id="mapContainer" class="map-container"></div>
+            </div>
+        </div>
+
+        <!-- Routes Section -->
+        <div id="routes" class="section hidden">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Gestion des itinéraires</h2>
+                <p class="text-gray-600">Optimisation automatique des tournées de collecte</p>
+            </div>
+
+            <!-- Route Generation -->
+            <div class="bg-white rounded-xl p-6 mb-6 card-shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer un nouvel itinéraire</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seuil de remplissage</label>
+                        <select id="routeThreshold" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="50">≥ 50%</option>
+                            <option value="70" selected>≥ 70%</option>
+                            <option value="80">≥ 80%</option>
+                            <option value="90">≥ 90%</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone de collecte</label>
+                        <select id="routeZone" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="">Toutes les zones</option>
+                            <option value="centre">Centre-ville</option>
+                            <option value="nord">Secteur Nord</option>
+                            <option value="sud">Secteur Sud</option>
+                            <option value="industriel">Zone Industrielle</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Capacité camion</label>
+                        <select id="truckCapacity" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="20">20 poubelles</option>
+                            <option value="30" selected>30 poubelles</option>
+                            <option value="40">40 poubelles</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="generateRoute()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-route mr-2"></i>Générer l'itinéraire optimal
+                </button>
+            </div>
+
+            <!-- Current Routes -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Itinéraires actifs</h3>
+                    <div id="routesList" class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-800">Route #001 - Secteur Nord</h4>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">En cours</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>15 arrêts</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span>2h 30min</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-route mr-1"></i>
+                                    <span>24.5 km</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-truck mr-1"></i>
+                                    <span>Camion A-01</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <button onclick="viewRoute('001')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>Voir
+                                </button>
+                                <button onclick="pauseRoute('001')" class="text-orange-600 hover:text-orange-800 text-sm">
+                                    <i class="fas fa-pause mr-1"></i>Pause
+                                </button>
+                                <button onclick="openInGoogleMaps('001')" class="text-purple-600 hover:text-purple-800 text-sm">
+                                    <i class="fas fa-map-marked-alt mr-1"></i>Navigation
+                                </button>
+                                <button onclick="completeRoute('001')" class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fas fa-check mr-1"></i>Terminer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-800">Route #002 - Centre-ville</h4>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">Planifiée</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>22 arrêts</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span>3h 15min</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-route mr-1"></i>
+                                    <span>18.2 km</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-truck mr-1"></i>
+                                    <span>Camion B-02</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <button onclick="viewRoute('002')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>Voir
+                                </button>
+                                <button onclick="startRoute('002')" class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fas fa-play mr-1"></i>Démarrer
+                                </button>
+                                <button onclick="openInGoogleMaps('002')" class="text-purple-600 hover:text-purple-800 text-sm">
+                                    <i class="fas fa-map-marked-alt mr-1"></i>Navigation
+                                </button>
+                                <button onclick="deleteRoute('002')" class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Optimisation suggérée</h3>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-lightbulb text-blue-600 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-blue-800">Économie possible</h4>
+                                <p class="text-sm text-blue-700 mt-1">
+                                    En regroupant les collectes du secteur Sud, vous pourriez économiser 
+                                    <strong>45 minutes</strong> et <strong>12 km</strong> de trajet.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-800">Temps total actuel</p>
+                                <p class="text-sm text-gray-600">5h 45min</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-600">Temps optimisé</p>
+                                <p class="text-sm text-green-600">5h 00min</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-800">Distance actuelle</p>
+                                <p class="text-sm text-gray-600">42.7 km</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-600">Distance optimisée</p>
+                                <p class="text-sm text-green-600">30.7 km</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="applyOptimization()" class="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-magic mr-2"></i>Appliquer l'optimisation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div id="stats" class="section hidden">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Statistiques et rapports</h2>
+                <p class="text-gray-600">Analyse avancée des données de collecte</p>
+            </div>
+
+            <!-- Time Period Selector -->
+            <div class="bg-white rounded-xl p-4 mb-6 card-shadow">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Période:</label>
+                        <select id="timePeriod" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="7">7 derniers jours</option>
+                            <option value="30" selected>30 derniers jours</option>
+                            <option value="90">3 derniers mois</option>
+                            <option value="365">Année complète</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Zone:</label>
+                        <select id="statsZone" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option value="">Toutes les zones</option>
+                            <option value="centre">Centre-ville</option>
+                            <option value="nord">Secteur Nord</option>
+                            <option value="sud">Secteur Sud</option>
+                            <option value="industriel">Zone Industrielle</option>
+                        </select>
+                    </div>
+                    <button onclick="updateStats()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-sync mr-2"></i>Actualiser
+                    </button>
+                    <button onclick="exportReport()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Exporter PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Collectes totales</p>
+                            <p id="totalCollections" class="text-3xl font-bold text-gray-900">1,247</p>
+                            <p class="text-sm text-green-600 mt-1">
+                                <i class="fas fa-arrow-up mr-1"></i>+8.2% vs mois dernier
+                            </p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-truck text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Temps moyen remplissage</p>
+                            <p id="avgFillTime" class="text-3xl font-bold text-gray-900">4.2j</p>
+                            <p class="text-sm text-orange-600 mt-1">
+                                <i class="fas fa-arrow-down mr-1"></i>-0.3j vs mois dernier
+                            </p>
+                        </div>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i class="fas fa-clock text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Optimisation tournées</p>
+                            <p id="routeOptimization" class="text-3xl font-bold text-gray-900">23%</p>
+                            <p class="text-sm text-green-600 mt-1">
+                                <i class="fas fa-arrow-up mr-1"></i>Économie de temps
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-route text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">CO₂ économisé</p>
+                            <p id="co2Saved" class="text-3xl font-bold text-gray-900">2.1t</p>
+                            <p class="text-sm text-green-600 mt-1">
+                                <i class="fas fa-leaf mr-1"></i>Impact environnemental
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-leaf text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Évolution des collectes</h3>
+                    <canvas id="collectionsChart" width="400" height="200"></canvas>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance par zone</h3>
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Stats Table -->
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Détail par poubelle</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">ID Poubelle</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Zone</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Niveau actuel</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Dernière collecte</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Fréquence</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Statut</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTableBody">
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">PB-001</td>
+                                <td class="py-3 px-4">Centre-ville</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                        95%
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Il y a 3 jours</td>
+                                <td class="py-3 px-4">2.1 jours</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Critique</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="collectBin('PB-001')" class="text-blue-600 hover:text-blue-800 text-xs">
+                                        <i class="fas fa-truck mr-1"></i>Collecter
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">PB-002</td>
+                                <td class="py-3 px-4">Secteur Nord</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                                        65%
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Il y a 1 jour</td>
+                                <td class="py-3 px-4">4.5 jours</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">Attention</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="collectBin('PB-002')" class="text-blue-600 hover:text-blue-800 text-xs">
+                                        <i class="fas fa-truck mr-1"></i>Collecter
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">PB-003</td>
+                                <td class="py-3 px-4">Secteur Sud</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                        32%
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Aujourd'hui</td>
+                                <td class="py-3 px-4">3.8 jours</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Normal</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="collectBin('PB-003')" class="text-gray-400 cursor-not-allowed text-xs">
+                                        <i class="fas fa-check mr-1"></i>OK
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="admin" class="section hidden">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Administration</h2>
+                <p class="text-gray-600">Gestion des utilisateurs, capteurs et paramètres système</p>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div class="bg-white rounded-xl card-shadow mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button onclick="showAdminTab('users')" class="admin-tab-btn py-4 text-sm font-medium border-b-2 border-blue-500 text-blue-600">
+                            <i class="fas fa-users mr-2"></i>Utilisateurs
+                        </button>
+                        <button onclick="showAdminTab('sensors')" class="admin-tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-microchip mr-2"></i>Capteurs
+                        </button>
+                        <button onclick="showAdminTab('settings')" class="admin-tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-cog mr-2"></i>Paramètres
+                        </button>
+                        <button onclick="showAdminTab('alerts')" class="admin-tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-bell mr-2"></i>Alertes
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="usersTab" class="admin-tab p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">Gestion des utilisateurs</h3>
+                        <button onclick="addUser()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Nouvel utilisateur
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Nom</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Email</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Rôle</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Dernière connexion</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Statut</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4 font-medium">Jean Dupont</td>
+                                    <td class="py-3 px-4">jean.dupont@ville.fr</td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Administrateur</span>
+                                    </td>
+                                    <td class="py-3 px-4">Il y a 5 min</td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Actif</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <button onclick="editUser('jean.dupont@ville.fr')" class="text-blue-600 hover:text-blue-800 mr-3">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteUser('jean.dupont@ville.fr')" class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4 font-medium">Marie Martin</td>
+                                    <td class="py-3 px-4">marie.martin@ville.fr</td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Gestionnaire</span>
+                                    </td>
+                                    <td class="py-3 px-4">Il y a 2h</td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Actif</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <button onclick="editUser('marie.martin@ville.fr')" class="text-blue-600 hover:text-blue-800 mr-3">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteUser('marie.martin@ville.fr')" class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sensors Tab -->
+                <div id="sensorsTab" class="admin-tab p-6 hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">Gestion des capteurs</h3>
+                        <button onclick="addSensor()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Nouveau capteur
+                        </button>
+                    </div>
+                    
+                    <div id="sensorsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-800">PB-001</h4>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div><strong>Zone:</strong> Centre-ville</div>
+                                <div><strong>Type:</strong> Déchets généraux</div>
+                                <div><strong>Niveau:</strong> 95%</div>
+                                <div><strong>Batterie:</strong> 78%</div>
+                                <div><strong>Signal:</strong> -65 dBm</div>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button onclick="editSensor('PB-001')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-edit mr-1"></i>Modifier
+                                </button>
+                                <button onclick="deleteSensor('PB-001')" class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-800">PB-002</h4>
+                                <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div><strong>Zone:</strong> Secteur Nord</div>
+                                <div><strong>Type:</strong> Recyclables</div>
+                                <div><strong>Niveau:</strong> 65%</div>
+                                <div><strong>Batterie:</strong> 45%</div>
+                                <div><strong>Signal:</strong> -72 dBm</div>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button onclick="editSensor('PB-002')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-edit mr-1"></i>Modifier
+                                </button>
+                                <button onclick="deleteSensor('PB-002')" class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-800">PB-003</h4>
+                                <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div><strong>Zone:</strong> Secteur Sud</div>
+                                <div><strong>Type:</strong> Organiques</div>
+                                <div><strong>Niveau:</strong> --</div>
+                                <div><strong>Batterie:</strong> 12%</div>
+                                <div><strong>Signal:</strong> Hors ligne</div>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button onclick="diagnoseSensor('PB-003')" class="text-orange-600 hover:text-orange-800 text-sm">
+                                    <i class="fas fa-wrench mr-1"></i>Diagnostiquer
+                                </button>
+                                <button onclick="deleteSensor('PB-003')" class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settingsTab" class="admin-tab p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Paramètres système</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-4">Seuils d'alerte</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Seuil attention (%)</label>
+                                    <input id="thresholdWarning" type="number" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Seuil critique (%)</label>
+                                    <input id="thresholdCritical" type="number" value="70" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Seuil urgence (%)</label>
+                                    <input id="thresholdUrgent" type="number" value="90" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-4">Notifications</h4>
+                            <div class="space-y-3">
+                                <label class="flex items-center">
+                                    <input id="emailNotifications" type="checkbox" checked class="rounded border-gray-300 text-blue-600 mr-3">
+                                    <span class="text-sm text-gray-700">Notifications email</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input id="smsNotifications" type="checkbox" checked class="rounded border-gray-300 text-blue-600 mr-3">
+                                    <span class="text-sm text-gray-700">Notifications SMS</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input id="pushNotifications" type="checkbox" class="rounded border-gray-300 text-blue-600 mr-3">
+                                    <span class="text-sm text-gray-700">Notifications push</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-4">Optimisation des tournées</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Algorithme d'optimisation</label>
+                                    <select id="optimizationAlgorithm" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                        <option>Plus court chemin</option>
+                                        <option selected>Économie de carburant</option>
+                                        <option>Minimisation du temps</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Mise à jour automatique</label>
+                                    <select id="autoUpdate" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                        <option>Toutes les heures</option>
+                                        <option selected>Toutes les 4 heures</option>
+                                        <option>Une fois par jour</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="saveSettings()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-save mr-2"></i>Enregistrer les paramètres
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Alerts Tab -->
+                <div id="alertsTab" class="admin-tab p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Configuration des alertes</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Poubelle pleine (>90%)</h4>
+                                    <p class="text-sm text-gray-600">Alerte immédiate quand une poubelle dépasse 90%</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="alertFullBin" type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Capteur hors ligne</h4>
+                                    <p class="text-sm text-gray-600">Alerte si aucun signal reçu depuis 2 heures</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="alertOfflineSensor" type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Batterie faible (<20%)</h4>
+                                    <p class="text-sm text-gray-600">Alerte maintenance préventive</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="alertLowBattery" type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Tournée en retard</h4>
+                                    <p class="text-sm text-gray-600">Alerte si une collecte dépasse l'horaire prévu de 30 min</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="alertDelayedRoute" type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let map;
+        let currentSection = 'dashboard';
+        let binMarkers = [];
+        let routeLayer = null;
+        let routes = [];
+        let notifications = [];
+        
+        // Sample data for bins
+        const binsData = [
+            { id: 'PB-001', lat: 48.8566, lng: 2.3522, level: 95, zone: 'centre', type: 'general', status: 'critical', battery: 78, signal: -65 },
+            { id: 'PB-002', lat: 48.8606, lng: 2.3376, level: 65, zone: 'nord', type: 'recyclable', status: 'warning', battery: 45, signal: -72 },
+            { id: 'PB-003', lat: 48.8529, lng: 2.3499, level: 32, zone: 'sud', type: 'organic', status: 'normal', battery: 89, signal: -58 },
+            { id: 'PB-004', lat: 48.8584, lng: 2.2945, level: 78, zone: 'centre', type: 'general', status: 'critical', battery: 67, signal: -61 },
+            { id: 'PB-005', lat: 48.8738, lng: 2.2950, level: 45, zone: 'nord', type: 'recyclable', status: 'normal', battery: 92, signal: -55 },
+            { id: 'PB-006', lat: 48.8462, lng: 2.3371, level: 0, zone: 'industriel', type: 'general', status: 'offline', battery: 12, signal: 0 }
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            showSection('dashboard');
+            simulateRealTimeUpdates();
+        });
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Add notification to panel
+        function addNotificationToPanel(message, type, icon) {
+            const notificationsList = document.getElementById('notificationsList');
+            const colors = {
+                'success': 'green',
+                'warning': 'orange',
+                'error': 'red',
+                'info': 'blue'
+            };
+            const color = colors[type] || 'blue';
+            
+            const notification = document.createElement('div');
+            notification.className = `flex items-start space-x-3 p-3 bg-${color}-50 rounded-lg`;
+            notification.innerHTML = `
+                <i class="fas fa-${icon} text-${color}-500 mt-1"></i>
+                <div>
+                    <p class="text-sm font-medium text-${color}-800">${message}</p>
+                    <p class="text-xs text-gray-500">À l'instant</p>
+                </div>
+            `;
+            
+            notificationsList.insertBefore(notification, notificationsList.firstChild);
+            
+            // Update badge
+            const badge = document.getElementById('notificationBadge');
+            const currentCount = parseInt(badge.textContent) || 0;
+            badge.textContent = currentCount + 1;
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.remove('hidden');
+            
+            // Update navigation buttons
+            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-200', 'bg-blue-100', 'text-blue-600');
+            });
+            
+            currentSection = sectionName;
+            
+            // Initialize map if map section is shown
+            if (sectionName === 'map' && !map) {
+                setTimeout(initializeMap, 100);
+            }
+        }
+
+        // Map functions
+        function initializeMap() {
+            map = L.map('mapContainer').setView([48.8566, 2.3522], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add bin markers
+            addBinMarkers();
+        }
+
+        function addBinMarkers() {
+            binMarkers = [];
+            
+            binsData.forEach(bin => {
+                const color = getBinColor(bin.level, bin.status);
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                
+                const marker = L.marker([bin.lat, bin.lng], { icon: icon }).addTo(map);
+                
+                const popupContent = `
+                    <div class="p-3">
+                        <h4 class="font-semibold text-gray-800 mb-2">${bin.id}</h4>
+                        <div class="space-y-1 text-sm">
+                            <div><strong>Zone:</strong> ${getZoneName(bin.zone)}</div>
+                            <div><strong>Type:</strong> ${getTypeName(bin.type)}</div>
+                            <div><strong>Niveau:</strong> ${bin.status === 'offline' ? 'Hors ligne' : bin.level + '%'}</div>
+                            <div><strong>Batterie:</strong> ${bin.battery}%</div>
+                            <div><strong>Statut:</strong> <span class="px-2 py-1 rounded-full text-xs ${getStatusClass(bin.status)}">${getStatusName(bin.status)}</span></div>
+                        </div>
+                        <div class="mt-3 flex space-x-2">
+                            <button onclick="collectBin('${bin.id}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                Programmer collecte
+                            </button>
+                            <button onclick="viewBinDetails('${bin.id}')" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+                                Détails
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                binMarkers.push({ marker, bin });
+            });
+        }
+
+        function getBinColor(level, status) {
+            if (status === 'offline') return '#9CA3AF';
+            if (level >= 70) return '#EF4444';
+            if (level >= 50) return '#F59E0B';
+            return '#10B981';
+        }
+
+        function getZoneName(zone) {
+            const zones = {
+                'centre': 'Centre-ville',
+                'nord': 'Secteur Nord',
+                'sud': 'Secteur Sud',
+                'industriel': 'Zone Industrielle'
+            };
+            return zones[zone] || zone;
+        }
+
+        function getTypeName(type) {
+            const types = {
+                'general': 'Déchets généraux',
+                'recyclable': 'Recyclables',
+                'organic': 'Organiques'
+            };
+            return types[type] || type;
+        }
+
+        function getStatusName(status) {
+            const statuses = {
+                'normal': 'Normal',
+                'warning': 'Attention',
+                'critical': 'Critique',
+                'offline': 'Hors ligne'
+            };
+            return statuses[status] || status;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'normal': 'bg-green-100 text-green-800',
+                'warning': 'bg-orange-100 text-orange-800',
+                'critical': 'bg-red-100 text-red-800',
+                'offline': 'bg-gray-100 text-gray-800'
+            };
+            return classes[status] || '';
+        }
+
+        // Filter functions
+        function applyFilters() {
+            const zoneFilter = document.getElementById('zoneFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            
+            let visibleCount = 0;
+            
+            binMarkers.forEach(({ marker, bin }) => {
+                let show = true;
+                
+                if (zoneFilter && bin.zone !== zoneFilter) show = false;
+                if (typeFilter && bin.type !== typeFilter) show = false;
+                if (levelFilter) {
+                    if (levelFilter === 'low' && bin.level >= 50) show = false;
+                    if (levelFilter === 'medium' && (bin.level < 50 || bin.level > 70)) show = false;
+                    if (levelFilter === 'high' && bin.level <= 70) show = false;
+                }
+                
+                if (show) {
+                    marker.addTo(map);
+                    visibleCount++;
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+            
+            showNotification(`Filtres appliqués: ${visibleCount} poubelles affichées`, 'info');
+        }
+
+        function refreshMap() {
+            // Simulate data refresh
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Actualisation...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Update some bin levels randomly
+                binsData.forEach(bin => {
+                    if (bin.status !== 'offline') {
+                        bin.level = Math.min(100, bin.level + Math.floor(Math.random() * 10) - 3);
+                        if (bin.level < 0) bin.level = 0;
+                    }
+                });
+                
+                // Clear existing markers
+                binMarkers.forEach(({ marker }) => map.removeLayer(marker));
+                
+                // Re-add markers with updated data
+                addBinMarkers();
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                showNotification('Carte actualisée avec succès!', 'success');
+                updateDashboardStats();
+            }, 1500);
+        }
+
+        // Route functions
+        function generateRoute() {
+            const threshold = parseInt(document.getElementById('routeThreshold').value);
+            const zone = document.getElementById('routeZone').value;
+            const capacity = parseInt(document.getElementById('truckCapacity').value);
+            
+            // Show loading
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Génération en cours...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Filter bins based on criteria
+                let eligibleBins = binsData.filter(bin => {
+                    if (bin.status === 'offline') return false;
+                    if (bin.level < threshold) return false;
+                    if (zone && bin.zone !== zone) return false;
+                    return true;
+                });
+                
+                // Limit to truck capacity
+                eligibleBins = eligibleBins.slice(0, capacity);
+                
+                if (eligibleBins.length === 0) {
+                    showNotification('Aucune poubelle ne correspond aux critères', 'warning');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    return;
+                }
+                
+                // Calculate route metrics
+                const distance = (eligibleBins.length * 1.2 + Math.random() * 5).toFixed(1);
+                const time = Math.floor(eligibleBins.length * 8 + Math.random() * 30);
+                const hours = Math.floor(time / 60);
+                const minutes = time % 60;
+                
+                // Create new route
+                const newRoute = {
+                    id: 'R' + Date.now().toString().slice(-3),
+                    bins: eligibleBins,
+                    distance: distance,
+                    time: `${hours}h ${minutes.toString().padStart(2, '0')}min`,
+                    status: 'planned',
+                    zone: zone || 'mixed',
+                    truck: 'Auto-' + Math.floor(Math.random() * 10).toString().padStart(2, '0')
+                };
+                
+                routes.push(newRoute);
+                
+                // Add to routes list
+                addRouteToList(newRoute);
+                
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Show success message
+                showNotification(`Itinéraire ${newRoute.id} généré: ${eligibleBins.length} arrêts, ${distance}km`, 'success');
+                addNotificationToPanel(`Nouvel itinéraire ${newRoute.id} généré`, 'success', 'route');
+                
+            }, 2000);
+        }
+        
+        function addRouteToList(route) {
+            const routesContainer = document.getElementById('routesList');
+            
+            const routeElement = document.createElement('div');
+            routeElement.className = 'border border-gray-200 rounded-lg p-4';
+            routeElement.setAttribute('data-route-id', route.id);
+            routeElement.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-gray-800">Route #${route.id} - ${getZoneName(route.zone)}</h4>
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">Planifiée</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        <span>${route.bins.length} arrêts</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>${route.time}</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-route mr-1"></i>
+                        <span>${route.distance} km</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-truck mr-1"></i>
+                        <span>Camion ${route.truck}</span>
+                    </div>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button onclick="viewRoute('${route.id}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fas fa-eye mr-1"></i>Voir
+                    </button>
+                    <button onclick="startRoute('${route.id}')" class="text-green-600 hover:text-green-800 text-sm">
+                        <i class="fas fa-play mr-1"></i>Démarrer
+                    </button>
+                    <button onclick="openInGoogleMaps('${route.id}')" class="text-purple-600 hover:text-purple-800 text-sm">
+                        <i class="fas fa-map-marked-alt mr-1"></i>Navigation
+                    </button>
+                    <button onclick="deleteRoute('${route.id}')" class="text-red-600 hover:text-red-800 text-sm">
+                        <i class="fas fa-trash mr-1"></i>Supprimer
+                    </button>
+                </div>
+            `;
+            
+            routesContainer.insertBefore(routeElement, routesContainer.firstChild);
+        }
+
+        function viewRoute(routeId) {
+            showSection('map');
+            
+            setTimeout(() => {
+                if (!map) {
+                    initializeMap();
+                    setTimeout(() => displayRouteOnMap(routeId), 500);
+                } else {
+                    displayRouteOnMap(routeId);
+                }
+            }, 100);
+        }
+        
+        function displayRouteOnMap(routeId) {
+            // Clear existing route
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+            
+            // Find route
+            const route = routes.find(r => r.id === routeId);
+            let routeBins;
+            
+            if (route) {
+                routeBins = route.bins;
+            } else {
+                // Fallback for demo routes
+                routeBins = binsData.filter(bin => bin.level >= 70).slice(0, 5);
+            }
+            
+            if (routeBins.length === 0) {
+                showNotification('Aucune donnée d\'itinéraire trouvée', 'warning');
+                return;
+            }
+            
+            // Create route line
+            const routeCoords = routeBins.map(bin => [bin.lat, bin.lng]);
+            
+            routeLayer = L.polyline(routeCoords, {
+                color: '#3B82F6',
+                weight: 4,
+                opacity: 0.8
+            }).addTo(map);
+            
+            // Add route markers
+            routeBins.forEach((bin, index) => {
+                const marker = L.marker([bin.lat, bin.lng], {
+                    icon: L.divIcon({
+                        className: 'route-marker',
+                        html: `<div style="background: #3B82F6; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${index + 1}</div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div class="p-3">
+                        <h4 class="font-semibold text-blue-600">Arrêt ${index + 1}</h4>
+                        <p class="text-sm text-gray-600 mt-1">Poubelle ${bin.id}</p>
+                        <p class="text-sm text-gray-600">Niveau: ${bin.level}%</p>
+                        <p class="text-sm text-gray-600">Zone: ${getZoneName(bin.zone)}</p>
+                    </div>
+                `);
+            });
+            
+            // Fit map to route
+            map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
+            
+            showNotification(`Itinéraire ${routeId} affiché sur la carte`, 'info');
+        }
+
+        function startRoute(routeId) {
+            const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+            if (!routeElement) return;
+            
+            const statusSpan = routeElement.querySelector('span');
+            statusSpan.className = 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+            statusSpan.textContent = 'En cours';
+            
+            // Update buttons
+            const buttonsDiv = routeElement.querySelector('.mt-3');
+            buttonsDiv.innerHTML = `
+                <button onclick="viewRoute('${routeId}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-eye mr-1"></i>Voir
+                </button>
+                <button onclick="pauseRoute('${routeId}')" class="text-orange-600 hover:text-orange-800 text-sm">
+                    <i class="fas fa-pause mr-1"></i>Pause
+                </button>
+                <button onclick="openInGoogleMaps('${routeId}')" class="text-purple-600 hover:text-purple-800 text-sm">
+                    <i class="fas fa-map-marked-alt mr-1"></i>Navigation
+                </button>
+                <button onclick="completeRoute('${routeId}')" class="text-green-600 hover:text-green-800 text-sm">
+                    <i class="fas fa-check mr-1"></i>Terminer
+                </button>
+            `;
+            
+            showNotification(`Itinéraire ${routeId} démarré!`, 'success');
+            addNotificationToPanel(`Itinéraire ${routeId} démarré`, 'info', 'play');
+            
+            // Update route status
+            const route = routes.find(r => r.id === routeId);
+            if (route) route.status = 'active';
+            
+            // Simulate progress
+            simulateRouteProgress(routeId);
+        }
+        
+        function simulateRouteProgress(routeId) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Auto-complete route
+                    setTimeout(() => {
+                        const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+                        if (routeElement && routeElement.querySelector('span').textContent === 'En cours') {
+                            completeRoute(routeId);
+                        }
+                    }, 2000);
+                }
+            }, 5000);
+        }
+        
+        function completeRoute(routeId) {
+            const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+            if (!routeElement) return;
+            
+            const statusSpan = routeElement.querySelector('span');
+            statusSpan.className = 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium';
+            statusSpan.textContent = 'Terminée';
+            
+            // Update buttons
+            const buttonsDiv = routeElement.querySelector('.mt-3');
+            buttonsDiv.innerHTML = `
+                <button onclick="viewRoute('${routeId}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-eye mr-1"></i>Voir
+                </button>
+                <button onclick="deleteRoute('${routeId}')" class="text-red-600 hover:text-red-800 text-sm">
+                    <i class="fas fa-trash mr-1"></i>Supprimer
+                </button>
+            `;
+            
+            showNotification(`Itinéraire ${routeId} terminé avec succès!`, 'success');
+            addNotificationToPanel(`Itinéraire ${routeId} terminé`, 'success', 'check-circle');
+            
+            // Update route status and simulate bin emptying
+            const route = routes.find(r => r.id === routeId);
+            if (route) {
+                route.status = 'completed';
+                // Empty the bins in this route
+                route.bins.forEach(bin => {
+                    const binData = binsData.find(b => b.id === bin.id);
+                    if (binData) {
+                        binData.level = Math.floor(Math.random() * 20); // 0-20% after collection
+                        binData.status = 'normal';
+                    }
+                });
+            }
+            
+            updateDashboardStats();
+            
+            // Refresh map if visible
+            if (currentSection === 'map' && map) {
+                setTimeout(() => {
+                    binMarkers.forEach(({ marker }) => map.removeLayer(marker));
+                    addBinMarkers();
+                }, 1000);
+            }
+        }
+        
+        function deleteRoute(routeId) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'itinéraire ${routeId} ?`)) {
+                const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+                if (routeElement) {
+                    routeElement.remove();
+                    
+                    // Remove from routes array
+                    const routeIndex = routes.findIndex(r => r.id === routeId);
+                    if (routeIndex > -1) {
+                        routes.splice(routeIndex, 1);
+                    }
+                    
+                    showNotification(`Itinéraire ${routeId} supprimé`, 'info');
+                }
+            }
+        }
+        
+        function pauseRoute(routeId) {
+            const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+            if (!routeElement) return;
+            
+            const statusSpan = routeElement.querySelector('span');
+            statusSpan.className = 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium';
+            statusSpan.textContent = 'En pause';
+            
+            // Update buttons
+            const buttonsDiv = routeElement.querySelector('.mt-3');
+            buttonsDiv.innerHTML = `
+                <button onclick="viewRoute('${routeId}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-eye mr-1"></i>Voir
+                </button>
+                <button onclick="resumeRoute('${routeId}')" class="text-green-600 hover:text-green-800 text-sm">
+                    <i class="fas fa-play mr-1"></i>Reprendre
+                </button>
+                <button onclick="completeRoute('${routeId}')" class="text-gray-600 hover:text-gray-800 text-sm">
+                    <i class="fas fa-check mr-1"></i>Terminer
+                </button>
+            `;
+            
+            showNotification(`Itinéraire ${routeId} mis en pause`, 'warning');
+        }
+        
+        function resumeRoute(routeId) {
+            const routeElement = document.querySelector(`[data-route-id="${routeId}"]`);
+            if (!routeElement) return;
+            
+            const statusSpan = routeElement.querySelector('span');
+            statusSpan.className = 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+            statusSpan.textContent = 'En cours';
+            
+            // Update buttons
+            const buttonsDiv = routeElement.querySelector('.mt-3');
+            buttonsDiv.innerHTML = `
+                <button onclick="viewRoute('${routeId}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-eye mr-1"></i>Voir
+                </button>
+                <button onclick="pauseRoute('${routeId}')" class="text-orange-600 hover:text-orange-800 text-sm">
+                    <i class="fas fa-pause mr-1"></i>Pause
+                </button>
+                <button onclick="openInGoogleMaps('${routeId}')" class="text-purple-600 hover:text-purple-800 text-sm">
+                    <i class="fas fa-map-marked-alt mr-1"></i>Navigation
+                </button>
+                <button onclick="completeRoute('${routeId}')" class="text-green-600 hover:text-green-800 text-sm">
+                    <i class="fas fa-check mr-1"></i>Terminer
+                </button>
+            `;
+            
+            showNotification(`Itinéraire ${routeId} repris`, 'success');
+        }
+
+        // Google Maps navigation function
+        function openInGoogleMaps(routeId) {
+            // Find route data
+            let routeBins;
+            const route = routes.find(r => r.id === routeId);
+            
+            if (route) {
+                routeBins = route.bins;
+            } else {
+                // Fallback for demo routes
+                if (routeId === '001') {
+                    routeBins = binsData.filter(bin => bin.zone === 'nord' && bin.level >= 70).slice(0, 5);
+                } else if (routeId === '002') {
+                    routeBins = binsData.filter(bin => bin.zone === 'centre' && bin.level >= 50).slice(0, 6);
+                } else {
+                    routeBins = binsData.filter(bin => bin.level >= 70).slice(0, 4);
+                }
+            }
+            
+            if (routeBins.length === 0) {
+                showNotification('Aucune donnée d\'itinéraire trouvée pour la navigation', 'warning');
+                return;
+            }
+            
+            // Create Google Maps URL with waypoints
+            let googleMapsUrl = 'https://www.google.com/maps/dir/';
+            
+            // Add starting point (first bin)
+            const startBin = routeBins[0];
+            googleMapsUrl += `${startBin.lat},${startBin.lng}/`;
+            
+            // Add waypoints (intermediate bins)
+            for (let i = 1; i < routeBins.length - 1; i++) {
+                const bin = routeBins[i];
+                googleMapsUrl += `${bin.lat},${bin.lng}/`;
+            }
+            
+            // Add destination (last bin)
+            if (routeBins.length > 1) {
+                const endBin = routeBins[routeBins.length - 1];
+                googleMapsUrl += `${endBin.lat},${endBin.lng}/`;
+            }
+            
+            // Add parameters for driving directions
+            googleMapsUrl += '?travelmode=driving&dir_action=navigate';
+            
+            // Open in new tab
+            window.open(googleMapsUrl, '_blank');
+            
+            showNotification(`Navigation Google Maps ouverte pour l'itinéraire ${routeId}`, 'success');
+            addNotificationToPanel(`Navigation démarrée: Route ${routeId}`, 'info', 'map-marked-alt');
+        }
+
+        function applyOptimization() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Optimisation...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Update optimization display
+                const optimizationSection = button.closest('.bg-white');
+                const timeElements = optimizationSection.querySelectorAll('.text-right p');
+                if (timeElements.length >= 2) {
+                    timeElements[0].innerHTML = '<span class="font-medium text-green-600">4h 15min</span>';
+                    timeElements[1].innerHTML = '<span class="font-medium text-green-600">28.3 km</span>';
+                }
+                
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>Optimisé';
+                button.className = 'w-full mt-4 bg-green-600 text-white py-2 rounded-lg';
+                
+                showNotification('Optimisation appliquée! Économie: 1h 30min et 14.4 km', 'success');
+                addNotificationToPanel('Optimisation des tournées appliquée', 'success', 'magic');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.className = 'w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors';
+                    button.disabled = false;
+                }, 3000);
+            }, 2000);
+        }
+
+        // Statistics functions
+        function updateStats() {
+            const period = document.getElementById('timePeriod').value;
+            const zone = document.getElementById('statsZone').value;
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Actualisation...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Update stats with random variations
+                const totalCollections = document.getElementById('totalCollections');
+                const avgFillTime = document.getElementById('avgFillTime');
+                const routeOptimization = document.getElementById('routeOptimization');
+                const co2Saved = document.getElementById('co2Saved');
+                
+                const baseValues = {
+                    7: { collections: 312, fillTime: 3.8, optimization: 18, co2: 0.8 },
+                    30: { collections: 1247, fillTime: 4.2, optimization: 23, co2: 2.1 },
+                    90: { collections: 3891, fillTime: 4.5, optimization: 27, co2: 6.8 },
+                    365: { collections: 15234, fillTime: 4.1, optimization: 31, co2: 28.4 }
+                };
+                
+                const values = baseValues[period];
+                const variation = (Math.random() - 0.5) * 0.2; // ±10% variation
+                
+                totalCollections.textContent = Math.floor(values.collections * (1 + variation)).toLocaleString();
+                avgFillTime.textContent = (values.fillTime * (1 + variation)).toFixed(1) + 'j';
+                routeOptimization.textContent = Math.floor(values.optimization * (1 + variation)) + '%';
+                co2Saved.textContent = (values.co2 * (1 + variation)).toFixed(1) + 't';
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                showNotification(`Statistiques mises à jour (${period} jours${zone ? ', ' + getZoneName(zone) : ''})`, 'success');
+            }, 1500);
+        }
+
+        function exportReport() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Génération...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Create a simple PDF-like data URL (demo)
+                const reportData = {
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    period: document.getElementById('timePeriod').value,
+                    zone: document.getElementById('statsZone').value,
+                    stats: {
+                        totalBins: binsData.length,
+                        activeBins: binsData.filter(b => b.status !== 'offline').length,
+                        criticalBins: binsData.filter(b => b.level >= 70).length,
+                        averageLevel: Math.round(binsData.reduce((sum, b) => sum + b.level, 0) / binsData.length)
+                    }
+                };
+                
+                // Simulate file download
+                const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `rapport-smartwaste-${reportData.date.replace(/\//g, '-')}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                showNotification('Rapport exporté avec succès!', 'success');
+                addNotificationToPanel('Rapport statistiques exporté', 'info', 'download');
+            }, 2000);
+        }
+
+        // Admin functions
+        function showAdminTab(tabName) {
+            // Hide all admin tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            event.target.classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        function addUser() {
+            const name = prompt('Nom de l\'utilisateur:');
+            const email = prompt('Email:');
+            const role = prompt('Rôle (Administrateur/Gestionnaire/Opérateur):') || 'Opérateur';
+            
+            if (name && email) {
+                const tbody = document.getElementById('usersTableBody');
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-medium">${name}</td>
+                    <td class="py-3 px-4">${email}</td>
+                    <td class="py-3 px-4">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${role}</span>
+                    </td>
+                    <td class="py-3 px-4">Jamais</td>
+                    <td class="py-3 px-4">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Actif</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <button onclick="editUser('${email}')" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteUser('${email}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                showNotification(`Utilisateur ${name} ajouté avec succès!`, 'success');
+            }
+        }
+
+        function editUser(email) {
+            showNotification(`Modification de l'utilisateur ${email}...`, 'info');
+        }
+
+        function deleteUser(email) {
+            if (confirm(`Supprimer l'utilisateur ${email} ?`)) {
+                const row = event.target.closest('tr');
+                row.remove();
+                showNotification(`Utilisateur ${email} supprimé`, 'info');
+            }
+        }
+
+        function addSensor() {
+            const id = prompt('ID du capteur (ex: PB-XXX):');
+            const zone = prompt('Zone (centre/nord/sud/industriel):') || 'centre';
+            const type = prompt('Type (general/recyclable/organic):') || 'general';
+            
+            if (id) {
+                const grid = document.getElementById('sensorsGrid');
+                const sensor = document.createElement('div');
+                sensor.className = 'border border-gray-200 rounded-lg p-4';
+                sensor.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-medium text-gray-800">${id}</h4>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div><strong>Zone:</strong> ${getZoneName(zone)}</div>
+                        <div><strong>Type:</strong> ${getTypeName(type)}</div>
+                        <div><strong>Niveau:</strong> 0%</div>
+                        <div><strong>Batterie:</strong> 100%</div>
+                        <div><strong>Signal:</strong> -45 dBm</div>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <button onclick="editSensor('${id}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-edit mr-1"></i>Modifier
+                        </button>
+                        <button onclick="deleteSensor('${id}')" class="text-red-600 hover:text-red-800 text-sm">
+                            <i class="fas fa-trash mr-1"></i>Supprimer
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(sensor);
+                
+                // Add to binsData
+                binsData.push({
+                    id: id,
+                    lat: 48.8566 + (Math.random() - 0.5) * 0.1,
+                    lng: 2.3522 + (Math.random() - 0.5) * 0.1,
+                    level: 0,
+                    zone: zone,
+                    type: type,
+                    status: 'normal',
+                    battery: 100,
+                    signal: -45
+                });
+                
+                showNotification(`Capteur ${id} ajouté avec succès!`, 'success');
+                addNotificationToPanel(`Nouveau capteur ${id} ajouté`, 'success', 'plus');
+            }
+        }
+
+        function editSensor(id) {
+            showNotification(`Configuration du capteur ${id}...`, 'info');
+        }
+
+        function deleteSensor(id) {
+            if (confirm(`Supprimer le capteur ${id} ?`)) {
+                event.target.closest('.border').remove();
+                
+                // Remove from binsData
+                const index = binsData.findIndex(bin => bin.id === id);
+                if (index > -1) {
+                    binsData.splice(index, 1);
+                }
+                
+                showNotification(`Capteur ${id} supprimé`, 'info');
+            }
+        }
+
+        function diagnoseSensor(id) {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Diagnostic...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                showNotification(`Diagnostic ${id}: Batterie faible, remplacement recommandé`, 'warning');
+            }, 2000);
+        }
+
+        function saveSettings() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enregistrement...';
+            button.disabled = true;
+            
+            // Collect settings
+            const settings = {
+                thresholds: {
+                    warning: document.getElementById('thresholdWarning').value,
+                    critical: document.getElementById('thresholdCritical').value,
+                    urgent: document.getElementById('thresholdUrgent').value
+                },
+                notifications: {
+                    email: document.getElementById('emailNotifications').checked,
+                    sms: document.getElementById('smsNotifications').checked,
+                    push: document.getElementById('pushNotifications').checked
+                },
+                optimization: {
+                    algorithm: document.getElementById('optimizationAlgorithm').value,
+                    autoUpdate: document.getElementById('autoUpdate').value
+                }
+            };
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                showNotification('Paramètres enregistrés avec succès!', 'success');
+                addNotificationToPanel('Paramètres système mis à jour', 'info', 'cog');
+            }, 1500);
+        }
+
+        // Bin functions
+        function collectBin(binId) {
+            const bin = binsData.find(b => b.id === binId);
+            if (bin) {
+                bin.level = Math.floor(Math.random() * 20); // 0-20% after collection
+                bin.status = 'normal';
+                
+                showNotification(`Collecte programmée pour ${binId}`, 'success');
+                addNotificationToPanel(`Collecte programmée: ${binId}`, 'info', 'truck');
+                
+                // Update dashboard
+                updateDashboardStats();
+                
+                // Refresh map if visible
+                if (currentSection === 'map' && map) {
+                    setTimeout(() => {
+                        binMarkers.forEach(({ marker }) => map.removeLayer(marker));
+                        addBinMarkers();
+                    }, 1000);
+                }
+            }
+        }
+
+        function viewBinDetails(binId) {
+            const bin = binsData.find(b => b.id === binId);
+            if (bin) {
+                alert(`Détails de ${binId}:\n\nZone: ${getZoneName(bin.zone)}\nType: ${getTypeName(bin.type)}\nNiveau: ${bin.level}%\nBatterie: ${bin.battery}%\nSignal: ${bin.signal} dBm\nStatut: ${getStatusName(bin.status)}`);
+            }
+        }
+
+        // Notification functions
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('notificationPanel');
+            const bell = event.target.closest('.fa-bell');
+            
+            if (!panel.contains(event.target) && !bell) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        // Update dashboard stats
+        function updateDashboardStats() {
+            const activeBins = binsData.filter(bin => bin.status !== 'offline').length;
+            const averageLevel = Math.round(binsData.reduce((sum, bin) => sum + (bin.status !== 'offline' ? bin.level : 0), 0) / activeBins);
+            const criticalBins = binsData.filter(bin => bin.level >= 70).length;
+            
+            document.getElementById('activeBins').textContent = activeBins;
+            document.getElementById('averageLevel').textContent = averageLevel + '%';
+            document.getElementById('activeAlerts').textContent = criticalBins;
+            
+            // Update completed collections
+            const completed = parseInt(document.getElementById('completedCollections').textContent) || 18;
+            if (Math.random() > 0.7) { // 30% chance to increment
+                document.getElementById('completedCollections').textContent = completed + 1;
+            }
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Randomly update some bin levels
+                binsData.forEach(bin => {
+                    if (bin.status !== 'offline' && Math.random() > 0.9) { // 10% chance
+                        bin.level = Math.min(100, bin.level + Math.floor(Math.random() * 5));
+                        
+                        // Update status based on level
+                        if (bin.level >= 90) {
+                            bin.status = 'critical';
+                        } else if (bin.level >= 70) {
+                            bin.status = 'critical';
+                        } else if (bin.level >= 50) {
+                            bin.status = 'warning';
+                        } else {
+                            bin.status = 'normal';
+                        }
+                    }
+                });
+                
+                // Update dashboard if visible
+                if (currentSection === 'dashboard') {
+                    updateDashboardStats();
+                }
+                
+                // Update map if visible
+                if (currentSection === 'map' && map && Math.random() > 0.8) { // 20% chance
+                    binMarkers.forEach(({ marker }) => map.removeLayer(marker));
+                    addBinMarkers();
+                }
+                
+            }, 30000); // Every 30 seconds
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            // Fill level chart
+            const fillCtx = document.getElementById('fillChart').getContext('2d');
+            new Chart(fillCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                    datasets: [{
+                        label: 'Taux moyen (%)',
+                        data: [45, 52, 48, 61, 55, 67, 68],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Zone distribution chart
+            const zoneCtx = document.getElementById('zoneChart').getContext('2d');
+            new Chart(zoneCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Centre-ville', 'Secteur Nord', 'Secteur Sud', 'Zone Industrielle'],
+                    datasets: [{
+                        data: [35, 28, 22, 15],
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Collections chart (for stats section)
+            setTimeout(() => {
+                const collectionsCtx = document.getElementById('collectionsChart');
+                if (collectionsCtx) {
+                    new Chart(collectionsCtx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                            datasets: [{
+                                label: 'Collectes',
+                                data: [285, 312, 298, 352],
+                                backgroundColor: '#10B981',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+
+            // Performance chart (for stats section)
+            setTimeout(() => {
+                const performanceCtx = document.getElementById('performanceChart');
+                if (performanceCtx) {
+                    new Chart(performanceCtx.getContext('2d'), {
+                        type: 'radar',
+                        data: {
+                            labels: ['Efficacité', 'Rapidité', 'Économie', 'Écologie', 'Satisfaction'],
+                            datasets: [{
+                                label: 'Performance',
+                                data: [85, 78, 92, 88, 82],
+                                borderColor: '#8B5CF6',
+                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                pointBackgroundColor: '#8B5CF6'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97af91e89341e23a',t:'MTc1NzE3ODUyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
